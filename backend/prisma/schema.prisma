@@ -19,6 +19,22 @@ model User {
   password_hash String
   role          Role
   created_at    DateTime @default(now())
+  loan_applications LoanApplication[]
 
   @@map("users")
+}
+
+model LoanApplication {
+  id           String   @id @default(uuid())
+  applicant_id String
+  amount       Decimal  @db.Decimal(12, 2)
+  purpose      String
+  status       String   @default("submitted")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  applicant    User     @relation(fields: [applicant_id], references: [id])
+
+  @@index([applicant_id])
+  @@index([status])
+  @@map("loan_applications")
 }

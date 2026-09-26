@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
+const loanRoutes = require('./routes/loan.routes');
 const { sendError } = require('./utils/response');
 
 const app = express();
@@ -9,6 +10,7 @@ app.use(cors());
 app.use(express.json({ limit: '100kb' }));
 
 app.use('/auth', authRoutes);
+app.use('/loans', loanRoutes);
 
 app.use((req, res) => {
   sendError(res, 404, 'Route not found');
