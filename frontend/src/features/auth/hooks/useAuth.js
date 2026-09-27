@@ -1,43 +1,39 @@
 import { useState } from 'react'
 import * as authApi from '../api/auth.api'
-
-function getErrorMessage(error) {
-  return error.response?.data?.message || 'Something went wrong. Please try again.'
-}
+import { getErrorMessage, getFieldErrors } from '../../../shared/utils/apiError'
 
 export function useAuth() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
-  async function login(credentials) {
+  async function request(call, fallback) {
     setLoading(true)
     setError('')
+    setFieldErrors({})
     try {
-      const result = await authApi.login(credentials)
-      return result
+      return await call()
     } catch (requestError) {
-      const message = getErrorMessage(requestError)
-      setError(message)
+      setError(getErrorMessage(requestError, fallback))
+      setFieldErrors(getFieldErrors(requestError))
       throw requestError
     } finally {
       setLoading(false)
     }
   }
 
-  async function register(details) {
-    setLoading(true)
-    setError('')
-    try {
-      const result = await authApi.register(details)
-      return result
-    } catch (requestError) {
-      const message = getErrorMessage(requestError)
-      setError(message)
-      throw requestError
-    } finally {
-      setLoading(false)
-    }
+  function login(credentials) {
+    return request(() => authApi.login(credentials), 'Sign in failed. Please try again.')
   }
 
-  return { login, register, loading, error, clearError: () => setError('') }
+  function register(details) {
+    return request(() => authApi.register(details), 'Registration failed. Please try again.')
+  }
+
+  function clearErrors() {
+    setError('')
+    setFieldErrors({})
+  }
+
+  return { login, register, loading, error, fieldErrors, clearErrors }
 }

@@ -1,76 +1,60 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../state/useAuthContext'
-import './Auth.scss'
+import { validateLogin } from '../validation'
+import { ROLE_HOME_PATHS } from '../../../shared/constants/roles'
+import FormField from '../../../shared/components/FormField'
+import AuthLayout from '../components/AuthLayout'
 
 function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, loading, error, clearError } = useAuthContext()
+  const { login, loading, error, fieldErrors, clearErrors, notice, setNotice } = useAuthContext()
   const [form, setForm] = useState({ email: '', password: '' })
-  const [validationError, setValidationError] = useState('')
+  const [clientErrors, setClientErrors] = useState({})
+  const errors = { ...fieldErrors, ...clientErrors }
+  const justRegistered = location.state?.registered
 
   function updateField(event) {
-    setForm({ ...form, [event.target.name]: event.target.value })
-    setValidationError('')
-    clearError()
+    const { name, value } = event.target
+    setForm({ ...form, [name]: value })
+    setClientErrors({ ...clientErrors, [name]: '' })
+    clearErrors()
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
-    if (!form.email || !form.password) {
-      setValidationError('Enter your email and password to continue.')
-      return
-    }
+    const validationErrors = validateLogin(form)
+    setClientErrors(validationErrors)
+    if (Object.keys(validationErrors).length) return
 
     try {
-      await login(form)
-      navigate(location.state?.from?.pathname || '/dashboard', { replace: true })
+      const result = await login({ ...form, email: form.email.trim() })
+      const fallback = location.state?.from?.pathname || '/dashboard'
+      navigate(ROLE_HOME_PATHS[result.data.user.role] || fallback, { replace: true })
     } catch {
-      // The hook exposes the API message for the form.
+      return
     }
   }
 
   return (
-    <main className="auth-page">
-      <section className="auth-intro">
-        <div className="brand-mark">LT</div>
-        <p className="eyebrow">Loan Tracker / 01</p>
-        <h1>Keep every application moving.</h1>
-        <p className="intro-copy">
-          A clear workspace for applicants and lending teams to review, verify,
-          and progress each loan with confidence.
-        </p>
-        <div className="intro-note">
-          <span className="note-dot" />
-          <span>Secure workspace for your lending workflow</span>
-        </div>
-      </section>
-
-      <section className="auth-panel">
-        <div className="form-heading">
-          <p className="eyebrow">Welcome back</p>
-          <h2>Sign in to your workspace</h2>
-          <p>Use the email connected to your Loan Tracker account.</p>
-        </div>
-        <form onSubmit={handleSubmit} noValidate>
-          <label>
-            Email address
-            <input name="email" type="email" value={form.email} onChange={updateField} placeholder="you@example.com" />
-          </label>
-          <label>
-            Password
-            <input name="password" type="password" value={form.password} onChange={updateField} placeholder="Enter your password" />
-          </label>
-          {(validationError || error) && <p className="form-error">{validationError || error}</p>}
-          <button className="primary-button" type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign in'}
-            <span aria-hidden="true">→</span>
-          </button>
-        </form>
-        <p className="form-switch">New to Loan Tracker? <Link to="/register">Create an account</Link></p>
-      </section>
-    </main>
+    <AuthLayout title="Sign in" subtitle="Welcome back. Enter your details to continue.">
+      {justRegistered && !notice && <p className="alert alert-success">Account created. Sign in to continue.</p>}
+      {notice && <p className="alert alert-info">{notice} <button type="button" className="link-button" onClick={() => setNotice('')}>Dismiss</button></p>}
+      <form onSubmit={handleSubmit} noValidate>
+        <FormField id="email" label="Email" error={errors.email}>
+          <input id="email" name="email" type="email" autoComplete="email" value={form.email} onChange={updateField} aria-invalid={Boolean(errors.email)} />
+        </FormField>
+        <FormField id="password" label="Password" error={errors.password}>
+          <input id="password" name="password" type="password" autoComplete="current-password" value={form.password} onChange={updateField} aria-invalid={Boolean(errors.password)} />
+        </FormField>
+        {error && !Object.keys(fieldErrors).length && <p className="alert alert-error" role="alert">{error}</p>}
+        <button className="button button-primary button-block" type="submit" disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+      <p className="form-footer">No account? <Link to="/register">Register</Link></p>
+    </AuthLayout>
   )
 }
 

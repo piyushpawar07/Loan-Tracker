@@ -6,6 +6,7 @@ const { uploadDocument: uploadMiddleware } = require('../utils/uploadConfig');
 const {
   uploadDocument,
   verifyDocument,
+  downloadDocument,
 } = require('../controllers/document.controller');
 
 const router = express.Router();
@@ -22,6 +23,12 @@ router.patch(
   authenticate,
   authorize(ROLES.VERIFIER),
   verifyDocument
+);
+router.get(
+  '/documents/:documentId/file',
+  authenticate,
+  authorize(...Object.values(ROLES)),
+  downloadDocument
 );
 
 module.exports = router;

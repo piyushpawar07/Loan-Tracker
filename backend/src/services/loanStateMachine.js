@@ -35,6 +35,10 @@ async function transitionLoanStatus(loanId, newStatus, userId, role) {
   }
 
   if (newStatus === 'verified') {
+    const documentCount = await prisma.document.count({ where: { loan_id: loanId } });
+    if (documentCount === 0) {
+      throw new Error('Cannot move to verified: no documents have been uploaded');
+    }
     const unverifiedDocument = await prisma.document.findFirst({
       where: { loan_id: loanId, verified: false },
     });

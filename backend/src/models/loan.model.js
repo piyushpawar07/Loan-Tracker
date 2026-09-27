@@ -14,14 +14,20 @@ function createLoan({ applicantId, amount, purpose }) {
       purpose,
       status: 'submitted',
     },
-    include: { applicant: { select: applicantFields } },
+    include: {
+      applicant: { select: applicantFields },
+      documents: true,
+    },
   });
 }
 
 function findLoanById(id) {
   return prisma.loanApplication.findUnique({
     where: { id },
-    include: { applicant: { select: applicantFields } },
+    include: {
+      applicant: { select: applicantFields },
+      documents: true,
+    },
   });
 }
 
@@ -33,7 +39,7 @@ function findLoansByRole(userId, role) {
   } else if (role === 'verifier') {
     where = { status: { in: ['submitted', 'under_verification'] } };
   } else if (role === 'approver') {
-    where = { status: 'verified' };
+    where = { status: { in: ['verified', 'approved'] } };
   } else {
     where = { id: '__no_matching_role__' };
   }
@@ -41,7 +47,10 @@ function findLoansByRole(userId, role) {
   return prisma.loanApplication.findMany({
     where,
     orderBy: { created_at: 'desc' },
-    include: { applicant: { select: applicantFields } },
+    include: {
+      applicant: { select: applicantFields },
+      documents: true,
+    },
   });
 }
 

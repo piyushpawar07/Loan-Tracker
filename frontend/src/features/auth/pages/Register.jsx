@@ -1,87 +1,69 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../state/useAuthContext'
-import './Auth.scss'
+import { validateRegistration } from '../validation'
+import FormField from '../../../shared/components/FormField'
+import AuthLayout from '../components/AuthLayout'
 
 function Register() {
   const navigate = useNavigate()
-  const { register, loading, error, clearError } = useAuthContext()
+  const { register, loading, error, fieldErrors, clearErrors } = useAuthContext()
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'applicant' })
-  const [validationError, setValidationError] = useState('')
+  const [clientErrors, setClientErrors] = useState({})
+  const errors = { ...fieldErrors, ...clientErrors }
 
   function updateField(event) {
-    setForm({ ...form, [event.target.name]: event.target.value })
-    setValidationError('')
-    clearError()
+    const { name, value } = event.target
+    setForm({ ...form, [name]: value })
+    setClientErrors({ ...clientErrors, [name]: '' })
+    clearErrors()
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
-    if (!form.name || !form.email || form.password.length < 8) {
-      setValidationError('Add your name, a valid email, and a password of at least 8 characters.')
-      return
-    }
+    const validationErrors = validateRegistration(form)
+    setClientErrors(validationErrors)
+    if (Object.keys(validationErrors).length) return
 
     try {
-      await register(form)
+      await register({ ...form, name: form.name.trim(), email: form.email.trim() })
       navigate('/login', { state: { registered: true } })
     } catch {
-      // The hook exposes the API message for the form.
+      return
     }
   }
 
   return (
-    <main className="auth-page register-page">
-      <section className="auth-intro">
-        <div className="brand-mark">LT</div>
-        <p className="eyebrow">Loan Tracker / 02</p>
-        <h1>Start with a better view of your loan.</h1>
-        <p className="intro-copy">
-          Create your account and keep documents, decisions, and next steps in one calm place.
-        </p>
-        <div className="process-list">
-          <span><b>01</b> Submit an application</span>
-          <span><b>02</b> Follow verification</span>
-          <span><b>03</b> Track the decision</span>
-        </div>
-      </section>
-
-      <section className="auth-panel">
-        <div className="form-heading">
-          <p className="eyebrow">Get started</p>
-          <h2>Create your workspace</h2>
-          <p>Your role determines the applications you can access.</p>
-        </div>
-        <form onSubmit={handleSubmit} noValidate>
-          <label>
-            Full name
-            <input name="name" value={form.name} onChange={updateField} placeholder="Alex Morgan" />
-          </label>
-          <label>
-            Email address
-            <input name="email" type="email" value={form.email} onChange={updateField} placeholder="you@example.com" />
-          </label>
-          <label>
-            Password
-            <input name="password" type="password" value={form.password} onChange={updateField} placeholder="At least 8 characters" />
-          </label>
-          <label>
-            Account role
-            <select name="role" value={form.role} onChange={updateField}>
-              <option value="applicant">Applicant</option>
-              <option value="verifier">Verifier</option>
-              <option value="approver">Approver</option>
-            </select>
-          </label>
-          {(validationError || error) && <p className="form-error">{validationError || error}</p>}
-          <button className="primary-button" type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create account'}
-            <span aria-hidden="true">→</span>
-          </button>
-        </form>
-        <p className="form-switch">Already have an account? <Link to="/login">Sign in</Link></p>
-      </section>
-    </main>
+    <AuthLayout title="Create your account" subtitle="Choose a role to try its part of the workflow.">
+      <form onSubmit={handleSubmit} noValidate>
+        <FormField id="name" label="Full name" error={errors.name}>
+          <input id="name" name="name" autoComplete="name" value={form.name} onChange={updateField} aria-invalid={Boolean(errors.name)} />
+        </FormField>
+        <FormField id="email" label="Email" error={errors.email}>
+          <input id="email" name="email" type="email" autoComplete="email" value={form.email} onChange={updateField} aria-invalid={Boolean(errors.email)} />
+        </FormField>
+        <FormField id="password" label="Password" error={errors.password} hint="8 to 72 characters">
+          <input id="password" name="password" type="password" autoComplete="new-password" value={form.password} onChange={updateField} aria-invalid={Boolean(errors.password)} />
+        </FormField>
+        <FormField
+          id="role"
+          label="Role"
+          error={errors.role}
+          hint="Demo only: roles are self-selected so each workflow can be tried. In production, verifier and approver accounts would be created by an administrator."
+        >
+          <select id="role" name="role" value={form.role} onChange={updateField}>
+            <option value="applicant">Applicant</option>
+            <option value="verifier">Verifier</option>
+            <option value="approver">Approver</option>
+          </select>
+        </FormField>
+        {error && !Object.keys(fieldErrors).length && <p className="alert alert-error" role="alert">{error}</p>}
+        <button className="button button-primary button-block" type="submit" disabled={loading}>
+          {loading ? 'Creating account…' : 'Create account'}
+        </button>
+      </form>
+      <p className="form-footer">Already registered? <Link to="/login">Sign in</Link></p>
+    </AuthLayout>
   )
 }
 

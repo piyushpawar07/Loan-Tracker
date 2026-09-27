@@ -58,7 +58,7 @@ async function updateLoanStatus(req, res) {
     if (err.message.startsWith('Role ') || err.message.includes('documents are unverified')) {
       return sendError(res, 403, err.message);
     }
-    if (err.message.startsWith('Cannot move from ')) {
+    if (err.message.startsWith('Cannot move from ') || err.message.includes('no documents have been uploaded')) {
       return sendError(res, 400, err.message);
     }
     throw err;

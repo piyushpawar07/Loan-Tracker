@@ -17,6 +17,13 @@ function findDocumentsByLoanId(loanId) {
   });
 }
 
+function findDocumentById(id) {
+  return prisma.document.findUnique({
+    where: { id },
+    include: { loan: { select: { applicant_id: true, status: true } } },
+  });
+}
+
 function markVerified(id, verified) {
   return prisma.document.update({
     where: { id },
@@ -24,4 +31,4 @@ function markVerified(id, verified) {
   });
 }
 
-module.exports = { createDocument, findDocumentsByLoanId, markVerified };
+module.exports = { createDocument, findDocumentsByLoanId, findDocumentById, markVerified };
