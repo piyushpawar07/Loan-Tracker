@@ -12,4 +12,9 @@ const createLoanValidation = [
   validate,
 ];
 
-module.exports = { createLoanValidation };
+const statusValidation = [
+  body('status').isString().notEmpty().withMessage('Status is required'),
+  validate,
+];
+
+module.exports = { createLoanValidation, statusValidation };

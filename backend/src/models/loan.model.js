@@ -53,4 +53,18 @@ function updateLoanStatus(id, status) {
   });
 }
 
-module.exports = { createLoan, findLoanById, findLoansByRole, updateLoanStatus };
+function getLoanHistory(loanId) {
+  return prisma.loanStatusHistory.findMany({
+    where: { loan_id: loanId },
+    orderBy: { changed_at: 'asc' },
+    include: { user: { select: { id: true, name: true } } },
+  });
+}
+
+module.exports = {
+  createLoan,
+  findLoanById,
+  findLoansByRole,
+  updateLoanStatus,
+  getLoanHistory,
+};

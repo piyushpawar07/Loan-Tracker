@@ -20,6 +20,7 @@ model User {
   role          Role
   created_at    DateTime @default(now())
   loan_applications LoanApplication[]
+  status_changes    LoanStatusHistory[]
 
   @@map("users")
 }
@@ -32,9 +33,38 @@ model LoanApplication {
   status       String   @default("submitted")
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
-  applicant    User     @relation(fields: [applicant_id], references: [id])
+  applicant      User                @relation(fields: [applicant_id], references: [id])
+  documents      Document[]
+  status_history LoanStatusHistory[]
 
   @@index([applicant_id])
   @@index([status])
   @@map("loan_applications")
+}
+
+model Document {
+  id       String          @id @default(uuid())
+  loan_id  String
+  doc_type String
+  file_url String
+  verified Boolean         @default(false)
+  loan     LoanApplication @relation(fields: [loan_id], references: [id], onDelete: Cascade)
+
+  @@index([loan_id])
+  @@map("documents")
+}
+
+model LoanStatusHistory {
+  id         String          @id @default(uuid())
+  loan_id    String
+  old_status String
+  new_status String
+  changed_by String
+  changed_at DateTime        @default(now())
+  loan       LoanApplication @relation(fields: [loan_id], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [changed_by], references: [id])
+
+  @@index([loan_id])
+  @@index([changed_by])
+  @@map("status_history")
 }
