@@ -1,0 +1,42 @@
+@use '../../../styles/variables' as *;
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(420px, .95fr);
+  background: $paper;
+}
+
+.auth-intro {
+  position: relative;
+  overflow: hidden;
+  padding: 48px clamp(36px, 7vw, 112px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: $forest;
+  color: $paper;
+  &::after { content: ''; position: absolute; right: -140px; bottom: -190px; width: 470px; height: 470px; border: 1px solid rgba(231, 238, 225, .22); border-radius: 50%; box-shadow: 0 0 0 42px rgba(231, 238, 225, .04), 0 0 0 84px rgba(231, 238, 225, .04); }
+  h1 { max-width: 620px; margin: auto 0 18px; font: 500 clamp(3.4rem, 6vw, 6.3rem)/.94 $display; letter-spacing: -4px; color: $paper; }
+  .eyebrow { color: $lime; }
+}
+
+.brand-mark { width: 44px; height: 44px; display: grid; place-items: center; color: $forest; background: $lime; font: 700 14px $display; letter-spacing: 1px; }
+.brand-mark.small { width: 30px; height: 30px; font-size: 11px; }
+.eyebrow { margin: 0 0 14px; color: $moss; font-size: 11px; font-weight: 700; letter-spacing: 1.7px; text-transform: uppercase; }
+.intro-copy { max-width: 430px; color: rgba(246, 247, 238, .7); font-size: 17px; line-height: 1.65; }
+.intro-note, .process-list { display: flex; gap: 12px; align-items: center; color: rgba(246, 247, 238, .58); font-size: 12px; letter-spacing: .3px; }
+.note-dot { width: 8px; height: 8px; border-radius: 50%; background: $lime; box-shadow: 0 0 0 5px rgba(202, 221, 103, .14); }
+.process-list { flex-direction: column; align-items: flex-start; gap: 16px; margin-top: auto; padding-top: 50px; span { display: flex; gap: 14px; align-items: center; } b { color: $lime; font: 600 11px $display; } }
+
+.auth-panel { align-self: center; width: min(100% - 72px, 440px); margin: auto; padding: 50px 36px; }
+.form-heading { margin-bottom: 42px; h2 { margin: 0 0 12px; color: $ink; font: 500 35px/1.05 $display; letter-spacing: -1.6px; } p:last-child { color: $muted; font-size: 14px; } }
+form { display: grid; gap: 22px; }
+label { display: grid; gap: 8px; color: $ink; font-size: 12px; font-weight: 700; letter-spacing: .2px; }
+input, select { width: 100%; box-sizing: border-box; border: 0; border-bottom: 1px solid $line; border-radius: 0; padding: 12px 0; color: $ink; background: transparent; font: 16px $body; outline: none; transition: border-color .2s; &:focus { border-color: $moss; } &::placeholder { color: #a7aaa1; } }
+select { cursor: pointer; }
+.primary-button { border: 0; min-height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; color: $forest; background: $lime; font: 700 13px $body; cursor: pointer; transition: transform .2s, background .2s; &:hover { background: #d7e878; transform: translateY(-2px); } &:disabled { opacity: .6; cursor: wait; transform: none; } span { font-size: 20px; font-weight: 400; } }
+.form-error { margin: -4px 0 0; color: #b54f43; font-size: 13px; line-height: 1.4; }
+.form-switch { margin: 26px 0 0; color: $muted; font-size: 13px; a { color: $forest; font-weight: 700; text-decoration: none; border-bottom: 1px solid $moss; } }
+
+@media (max-width: 800px) { .auth-page { grid-template-columns: 1fr; } .auth-intro { min-height: 420px; padding: 28px 28px 40px; h1 { margin-top: 70px; font-size: 3.5rem; letter-spacing: -2px; } } .auth-panel { width: min(100% - 40px, 460px); padding: 54px 20px; } }
